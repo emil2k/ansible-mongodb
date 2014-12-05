@@ -7,3 +7,13 @@
 - name: Configure log rotation
   template: src=logrotate.conf.j2 dest=/etc/logrotate.d/mongodb.conf
   when: mongodb_logrotate
+
+- name: Create mongod daemon user and group
+  user: name=mongodb group=mongodb state=present
+
+- name: Configure ownership of dbpath
+  file: path={{ mongodb_conf_dbpath }} owner=mongodb group=mongodb mode=0755 state=directory
+
+- name: Configure ownership of log path
+  file: path={{ mongodb_conf_logpath }} owner=mongodb group=mongodb mode=0644 state=file
+
