@@ -2,7 +2,15 @@
 
 - name: Configure mongodb
   template: src=mongod.conf.j2 dest=/etc/mongod.conf owner=root group=root mode=0644
-  notify: mongodb reload
+  register: configure
+
+# NOTE: Must restart and not reload, reload does not seem to be supported by
+# the init script. When asked to reload the proces is terminated but not
+# restarted.
+
+- name: Restart mongod after configuration change
+  service: name=mongod state=restarted
+  when: configure|changed
 
 - name: Configure log rotation
   template: src=logrotate.conf.j2 dest=/etc/logrotate.d/mongodb.conf
@@ -16,4 +24,3 @@
 
 - name: Configure ownership of log path
   file: path={{ mongodb_conf_logpath }} owner=mongodb group=mongodb mode=0644 state=file
-
